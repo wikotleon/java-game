@@ -1,110 +1,94 @@
 package com.game;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import com.game.enums.AttributeType;
+import com.game.challenges.*;
+import java.io.IOException;
+import java.util.*;
 
 public class Game {
+    private static final int MAX_CHARACTERS = 5;
+
     private List<Character> playerCharacters;
     private List<Character> botCharacters;
-    private List<String> challenges;
-    private Random random;
+    private int playerTeamScore;
+    private int botTeamScore;
     private Scanner scanner;
     private String playerTeamName;
     private String botTeamName;
-    private int playerTeamScore;
-    private int botTeamScore;
+    private List<Challenge> challenges;
 
     public Game() {
         playerCharacters = new ArrayList<>();
         botCharacters = new ArrayList<>();
-        challenges = new ArrayList<>();
-        random = new Random();
         scanner = new Scanner(System.in);
-        playerTeamName = "team qwerty";
-        botTeamName = "team bot";
-        playerTeamScore = 0;
-        botTeamScore = 0;
+        playerTeamName = "qwerty";
+        botTeamName = "BOTS";
         initializeChallenges();
     }
 
     private void initializeChallenges() {
-        challenges.add("Fistfight");
-        challenges.add("NecromancerBattle");
-        challenges.add("ForestEscape");
-        challenges.add("CastleConvincing");
-        challenges.add("TreasureHunt");
-        challenges.add("TrapNavigation");
+        challenges = new ArrayList<>();
+        challenges.add(new FistfightChallenge());
+        challenges.add(new NecromancerBattleChallenge());
+        challenges.add(new ForestEscapeChallenge());
+        challenges.add(new CastleConvincingChallenge());
+        challenges.add(new TreasureHuntChallenge());
+        challenges.add(new TrapNavigationChallenge());
     }
 
     public void setPlayerTeamName() {
-        System.out.print("Enter your team name: ");
-        playerTeamName = scanner.next();
+        System.out.print("Enter your team name (or type 'back' to return to menu): ");
+        String input = scanner.next();
+        if (input.equalsIgnoreCase("back")) {
+            return;
+        }
+        playerTeamName = input;
     }
 
     public void createPlayerCharacter() {
-        if (playerCharacters.size() >= 5) {
+        if (playerCharacters.size() >= MAX_CHARACTERS) {
             System.out.println("You can only add up to 5 characters.");
             return;
         }
 
-        System.out.println("Create your character:");
-        System.out.print("Enter character name: ");
+        System.out.print("Enter character name (or type 'back' to return to menu): ");
         String name = scanner.next();
+        if (name.equalsIgnoreCase("back")) {
+            return;
+        }
 
-        int magic = 0, strength = 0, endurance = 0, charisma = 0, perception = 0, intelligence = 0;
+        int[] attributes = new int[AttributeType.values().length];
         int points = 10;
 
         while (points > 0) {
-            System.out.println("You have " + points + " points left to distribute.");
-            System.out.print("Enter points for Magic: ");
-            magic = scanner.nextInt();
-            points -= magic;
-
-            if (points > 0) {
+            for (int i = 0; i < AttributeType.values().length; i++) {
                 System.out.println("You have " + points + " points left to distribute.");
-                System.out.print("Enter points for Strength: ");
-                strength = scanner.nextInt();
-                points -= strength;
+                System.out.print("Enter points for " + AttributeType.values()[i].name().toLowerCase() + " (or type 'back' to return to menu): ");
+                String input = scanner.next();
+                if (input.equalsIgnoreCase("back")) {
+                    return;
+                }
+                try {
+                    int pointInput = Integer.parseInt(input);
+                    if (pointInput < 0 || pointInput > points) {
+                        System.out.println("Invalid number of points. Try again.");
+                        i--; // Retry this attribute
+                        continue;
+                    }
+                    attributes[i] += pointInput;
+                    points -= pointInput;
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                    i--; // Retry this attribute
+                }
             }
 
             if (points > 0) {
-                System.out.println("You have " + points + " points left to distribute.");
-                System.out.print("Enter points for Endurance: ");
-                endurance = scanner.nextInt();
-                points -= endurance;
-            }
-
-            if (points > 0) {
-                System.out.println("You have " + points + " points left to distribute.");
-                System.out.print("Enter points for Charisma: ");
-                charisma = scanner.nextInt();
-                points -= charisma;
-            }
-
-            if (points > 0) {
-                System.out.println("You have " + points + " points left to distribute.");
-                System.out.print("Enter points for Perception: ");
-                perception = scanner.nextInt();
-                points -= perception;
-            }
-
-            if (points > 0) {
-                System.out.println("You have " + points + " points left to distribute.");
-                System.out.print("Enter points for Intelligence: ");
-                intelligence = scanner.nextInt();
-                points -= intelligence;
-            }
-
-            if (points < 0) {
-                System.out.println("You have distributed more than 10 points. Please try again.");
-                points = 10;
+                System.out.println("You must distribute exactly 10 points. Please continue allocating the remaining points.");
             }
         }
 
-        Character character = new Character(name, magic, strength, endurance, charisma, perception, intelligence);
-        playerCharacters.add(character);
+        playerCharacters.add(new Character(name, attributes));
     }
 
     public void removePlayerCharacter() {
@@ -113,103 +97,60 @@ public class Game {
             return;
         }
 
-        System.out.println("Enter the ID of the character to remove:");
-        int id = scanner.nextInt();
-
-        if (id < 1 || id > playerCharacters.size()) {
-            System.out.println("Invalid ID.");
+        System.out.print("Enter the ID of the character to remove (or type 'back' to return to menu): ");
+        String input = scanner.next();
+        if (input.equalsIgnoreCase("back")) {
             return;
         }
-
-        playerCharacters.remove(id - 1);
-        System.out.println("Character removed.");
-    }
-
-    public void showAllCharacters() {
-        if (playerCharacters.isEmpty()) {
-            System.out.println("No characters to display.");
-            return;
-        }
-
-        for (int i = 0; i < playerCharacters.size(); i++) {
-            Character character = playerCharacters.get(i);
-            System.out.println("ID: " + (i + 1));
-            System.out.println("Name: " + character.getName());
-            System.out.println("Magic: " + character.getMagic());
-            System.out.println("Strength: " + character.getStrength());
-            System.out.println("Endurance: " + character.getEndurance());
-            System.out.println("Charisma: " + character.getCharisma());
-            System.out.println("Perception: " + character.getPerception());
-            System.out.println("Intelligence: " + character.getIntelligence());
-            System.out.println();
-        }
-    }
-
-    public void showCharactersByAttribute(String attribute) {
-        if (playerCharacters.isEmpty()) {
-            System.out.println("No characters to display.");
-            return;
-        }
-
-        for (Character character : playerCharacters) {
-            switch (attribute.toLowerCase()) {
-                case "magic":
-                    System.out.println(character.getName() + " - Magic: " + character.getMagic());
-                    break;
-                case "strength":
-                    System.out.println(character.getName() + " - Strength: " + character.getStrength());
-                    break;
-                case "endurance":
-                    System.out.println(character.getName() + " - Endurance: " + character.getEndurance());
-                    break;
-                case "charisma":
-                    System.out.println(character.getName() + " - Charisma: " + character.getCharisma());
-                    break;
-                case "perception":
-                    System.out.println(character.getName() + " - Perception: " + character.getPerception());
-                    break;
-                case "intelligence":
-                    System.out.println(character.getName() + " - Intelligence: " + character.getIntelligence());
-                    break;
-                default:
-                    System.out.println("Invalid attribute.");
-                    return;
+        try {
+            int id = Integer.parseInt(input);
+            if (id < 1 || id > playerCharacters.size()) {
+                System.out.println("Invalid ID.");
+                return;
             }
+            playerCharacters.remove(id - 1);
+            System.out.println("Character removed.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please enter a number.");
+        }
+    }
+
+    public void removeAllCharacters() {
+        System.out.print("Are you sure you want to remove all characters? (yes/no, or type 'back' to return to menu): ");
+        String input = scanner.next();
+        if (input.equalsIgnoreCase("back")) {
+            return;
+        }
+        if (input.equalsIgnoreCase("yes")) {
+            playerCharacters.clear();
+            System.out.println("All characters removed.");
+        } else {
+            System.out.println("Operation cancelled.");
         }
     }
 
     private void createBotCharacters() {
         botCharacters.clear();
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= MAX_CHARACTERS; i++) {
             String name = "BOT" + i;
-            int magic = 0, strength = 0, endurance = 0, charisma = 0, perception = 0, intelligence = 0;
+            int[] attributes = new int[AttributeType.values().length];
             int points = 10;
 
             while (points > 0) {
-                int attributePoints = random.nextInt(points + 1);
-                if (magic == 0) {
-                    magic = attributePoints;
-                } else if (strength == 0) {
-                    strength = attributePoints;
-                } else if (endurance == 0) {
-                    endurance = attributePoints;
-                } else if (charisma == 0) {
-                    charisma = attributePoints;
-                } else if (perception == 0) {
-                    perception = attributePoints;
-                } else if (intelligence == 0) {
-                    intelligence = attributePoints;
+                for (int j = 0; j < attributes.length; j++) {
+                    int attributePoints = new Random().nextInt(points + 1);
+                    attributes[j] = attributePoints;
+                    points -= attributePoints;
+                    if (points <= 0) break;
                 }
-                points -= attributePoints;
             }
 
-            Character bot = new Character(name, magic, strength, endurance, charisma, perception, intelligence);
-            botCharacters.add(bot);
+            botCharacters.add(new Character(name, attributes));
         }
     }
 
     public void startGameRounds() {
-        if (playerCharacters.size() < 5) {
+        if (playerCharacters.size() < MAX_CHARACTERS) {
             System.out.println("You need to create 5 characters before starting the game.");
             return;
         }
@@ -219,7 +160,7 @@ public class Game {
         playerTeamScore = 0;
         botTeamScore = 0;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < MAX_CHARACTERS; i++) {
             Character player = playerCharacters.get(i);
             Character bot = botCharacters.get(i);
 
@@ -229,95 +170,29 @@ public class Game {
             int botWins = 0;
             int ties = 0;
 
-            List<String> selectedChallenges = new ArrayList<>();
-            while (selectedChallenges.size() < 3) {
-                String challenge = challenges.get(random.nextInt(challenges.size()));
-                if (!selectedChallenges.contains(challenge)) {
-                    selectedChallenges.add(challenge);
-                }
-            }
+            Collections.shuffle(challenges);
+            List<Challenge> selectedChallenges = challenges.subList(0, 3);
 
-            for (String challenge : selectedChallenges) {
-                System.out.println("Challenge: " + challenge);
+            for (Challenge challenge : selectedChallenges) {
+                System.out.println("Challenge: " + challenge.getName());
                 try {
-                    Thread.sleep(5000); // 5 seconds delay
+                    Thread.sleep(2000); // 2 seconds delay
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                switch (challenge) {
-                    case "Fistfight":
-                        if (player.getStrength() > bot.getStrength()) {
-                            System.out.println(player.getName() + " has more strength than " + bot.getName() + " so " + player.getName() + " wins the Fistfight!\n");
-                            playerWins++;
-                        } else if (player.getStrength() < bot.getStrength()) {
-                            System.out.println(bot.getName() + " has more strength than " + player.getName() + " so " + bot.getName() + " wins the Fistfight!\n");
-                            botWins++;
-                        } else {
-                            System.out.println(player.getName() + " and " + bot.getName() + " have equal strength, so it's a tie in the Fistfight!\n");
-                            ties++;
-                        }
-                        break;
-                    case "NecromancerBattle":
-                        if (player.getMagic() > bot.getMagic()) {
-                            System.out.println(player.getName() + " has more magic than " + bot.getName() + " so " + player.getName() + " wins the NecromancerBattle!\n");
-                            playerWins++;
-                        } else if (player.getMagic() < bot.getMagic()) {
-                            System.out.println(bot.getName() + " has more magic than " + player.getName() + " so " + bot.getName() + " wins the NecromancerBattle!\n");
-                            botWins++;
-                        } else {
-                            System.out.println(player.getName() + " and " + bot.getName() + " have equal magic, so it's a tie in the NecromancerBattle!\n");
-                            ties++;
-                        }
-                        break;
-                    case "ForestEscape":
-                        if (player.getEndurance() > bot.getEndurance()) {
-                            System.out.println(player.getName() + " has more endurance than " + bot.getName() + " so " + player.getName() + " wins the ForestEscape!\n");
-                            playerWins++;
-                        } else if (player.getEndurance() < bot.getEndurance()) {
-                            System.out.println(bot.getName() + " has more endurance than " + player.getName() + " so " + bot.getName() + " wins the ForestEscape!\n");
-                            botWins++;
-                        } else {
-                            System.out.println(player.getName() + " and " + bot.getName() + " have equal endurance, so it's a tie in the ForestEscape!\n");
-                            ties++;
-                        }
-                        break;
-                    case "CastleConvincing":
-                        if (player.getCharisma() > bot.getCharisma()) {
-                            System.out.println(player.getName() + " has more charisma than " + bot.getName() + " so " + player.getName() + " wins the CastleConvincing!\n");
-                            playerWins++;
-                        } else if (player.getCharisma() < bot.getCharisma()) {
-                            System.out.println(bot.getName() + " has more charisma than " + player.getName() + " so " + bot.getName() + " wins the CastleConvincing!\n");
-                            botWins++;
-                        } else {
-                            System.out.println(player.getName() + " and " + bot.getName() + " have equal charisma, so it's a tie in the CastleConvincing!\n");
-                            ties++;
-                        }
-                        break;
-                    case "TreasureHunt":
-                        if (player.getPerception() > bot.getPerception()) {
-                            System.out.println(player.getName() + " has more perception than " + bot.getName() + " so " + player.getName() + " wins the TreasureHunt!\n");
-                            playerWins++;
-                        } else if (player.getPerception() < bot.getPerception()) {
-                            System.out.println(bot.getName() + " has more perception than " + player.getName() + " so " + bot.getName() + " wins the TreasureHunt!\n");
-                            botWins++;
-                        } else {
-                            System.out.println(player.getName() + " and " + bot.getName() + " have equal perception, so it's a tie in the TreasureHunt!\n");
-                            ties++;
-                        }
-                        break;
-                    case "TrapNavigation":
-                        if (player.getIntelligence() > bot.getIntelligence()) {
-                            System.out.println(player.getName() + " has more intelligence than " + bot.getName() + " so " + player.getName() + " wins the TrapNavigation!\n");
-                            playerWins++;
-                        } else if (player.getIntelligence() < bot.getIntelligence()) {
-                            System.out.println(bot.getName() + " has more intelligence than " + player.getName() + " so " + bot.getName() + " wins the TrapNavigation!\n");
-                            botWins++;
-                        } else {
-                            System.out.println(player.getName() + " and " + bot.getName() + " have equal intelligence, so it's a tie in the TrapNavigation!\n");
-                            ties++;
-                        }
-                        break;
+                boolean playerWinsChallenge = challenge.execute(player, bot);
+                boolean botWinsChallenge = challenge.execute(bot, player);
+
+                if (playerWinsChallenge && !botWinsChallenge) {
+                    System.out.println(player.getName() + " wins the " + challenge.getName() + "!\n");
+                    playerWins++;
+                } else if (!playerWinsChallenge && botWinsChallenge) {
+                    System.out.println(bot.getName() + " wins the " + challenge.getName() + "!\n");
+                    botWins++;
+                } else {
+                    System.out.println("It's a tie in the " + challenge.getName() + "!\n");
+                    ties++;
                 }
 
                 try {
@@ -341,57 +216,70 @@ public class Game {
                 System.out.println("It's a tie overall!");
             }
 
-            System.out.println("Current Score: " + botTeamName + " " + botTeamScore + " : " + playerTeamScore + " " + playerTeamName);
+            System.out.println("Current Score: " + botTeamName + " " + botTeamScore + " : " + playerTeamScore + " " + "Team " + playerTeamName);
         }
 
         if (playerTeamScore > botTeamScore) {
             System.out.println("Team " + playerTeamName + " wins!");
         } else if (botTeamScore > playerTeamScore) {
-            System.out.println("Team " + botTeamName + " wins!");
+            System.out.println(botTeamName + " wins!");
         } else {
             System.out.println("It's a tie!");
+        }
+    }
+
+    public void showAllCharacters() {
+        if (playerCharacters.isEmpty()) {
+            System.out.println("No characters to display.");
+            return;
+        }
+
+        for (int i = 0; i < playerCharacters.size(); i++) {
+            Character character = playerCharacters.get(i);
+            System.out.println("ID: " + (i + 1) + ", " + character);
         }
     }
 
     public void showMenu() {
         while (true) {
             System.out.println("Menu:");
-            System.out.println("0. Set team name");
-            System.out.println("1. Add new character");
-            System.out.println("2. Remove character");
-            System.out.println("3. Show all characters");
-            System.out.println("4. Show characters by attribute");
-            System.out.println("5. Start game rounds");
-            System.out.println("6. Exit");
+            System.out.println("1. Set team name");
+            System.out.println("2. Add new character");
+            System.out.println("3. Remove a character");
+            System.out.println("4. Remove all characters");
+            System.out.println("5. Show all characters");
+            System.out.println("6. Start game rounds");
+            System.out.println("7. Exit");
             System.out.print("Enter your choice: ");
-            int choice = scanner.nextInt();
-
-            switch (choice) {
-                case 0:
-                    setPlayerTeamName();
-                    break;
-                case 1:
-                    createPlayerCharacter();
-                    break;
-                case 2:
-                    removePlayerCharacter();
-                    break;
-                case 3:
-                    showAllCharacters();
-                    break;
-                case 4:
-                    System.out.print("Enter attribute (magic, strength, endurance, charisma, perception, intelligence): ");
-                    String attribute = scanner.next();
-                    showCharactersByAttribute(attribute);
-                    break;
-                case 5:
-                    startGameRounds();
-                    break;
-                case 6:
-                    System.out.println("Exiting...");
-                    return;
-                default:
-                    System.out.println("Invalid choice. Please try again.");
+            try {
+                int choice = Integer.parseInt(scanner.next());
+                switch (choice) {
+                    case 1:
+                        setPlayerTeamName();
+                        break;
+                    case 2:
+                        createPlayerCharacter();
+                        break;
+                    case 3:
+                        removePlayerCharacter();
+                        break;
+                    case 4:
+                        removeAllCharacters();
+                        break;
+                    case 5:
+                        showAllCharacters();
+                        break;
+                    case 6:
+                        startGameRounds();
+                        break;
+                    case 7:
+                        System.out.println("Exiting...");
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
             }
         }
     }

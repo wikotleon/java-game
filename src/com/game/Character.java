@@ -1,55 +1,36 @@
 package com.game;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import com.game.enums.AttributeType;
+import java.util.EnumMap;
 
 public class Character {
-    private String name;
-    private int magic;
-    private int strength;
-    private int endurance;
-    private int charisma;
-    private int perception;
-    private int intelligence;
+    private final String name;
+    private final EnumMap<AttributeType, Integer> attributes;
 
-    public Character(String name, int magic, int strength, int endurance, int charisma, int perception, int intelligence) {
+    public Character(String name, int[] attributeValues) {
         this.name = name;
-        this.magic = magic;
-        this.strength = strength;
-        this.endurance = endurance;
-        this.charisma = charisma;
-        this.perception = perception;
-        this.intelligence = intelligence;
+        this.attributes = new EnumMap<>(AttributeType.class);
+
+        AttributeType[] types = AttributeType.values();
+        for (int i = 0; i < types.length; i++) {
+            this.attributes.put(types[i], attributeValues[i]);
+        }
     }
 
     public String getName() {
         return name;
     }
 
-    public int getMagic() {
-        return magic;
+    public int getAttributeValue(AttributeType type) {
+        return attributes.getOrDefault(type, 0);
     }
 
-    public int getStrength() {
-        return strength;
-    }
-
-    public int getEndurance() {
-        return endurance;
-    }
-
-    public int getCharisma() {
-        return charisma;
-    }
-
-    public int getPerception() {
-        return perception;
-    }
-
-    public int getIntelligence() {
-        return intelligence;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(name + ", Attributes:");
+        for (AttributeType type : AttributeType.values()) {
+            sb.append(" ").append(type.name().toLowerCase()).append(": ").append(attributes.get(type));
+        }
+        return sb.toString();
     }
 }
-
