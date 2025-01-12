@@ -1,24 +1,29 @@
 # Java Game
 
-This project is a simple text-based game where players can choose characters with different attributes and compete in various challenges. The game includes rounds where characters face off in challenges based on their skills in magic, strength, endurance, charisma, perception, and intelligence.
+This is a simple Java-based game where players can create characters, set team names, and compete in various challenges against bot characters.
 
 ## Features
 
-- **Character Selection**: Players can choose from 10 unique characters, each with different names and skill points.
-- **Challenges**: The game includes several challenges:
-  - Fistfight (Strength)
-  - Battle against a Necromancer (Magic)
-  - Escape through the Forest (Endurance)
-  - Convincing Castle Guards (Charisma)
-  - Treasure Hunting (Perception)
-  - Navigating a Trap-filled Castle (Intelligence)
-- **Randomized Challenges**: Each game round features three randomly selected challenges.
+- Create up to 5 player characters
+- Set team names
+- Compete in various challenges
+- View all characters
+- Remove individual or all characters
+- Start game rounds and view scores
+
+
+### Prerequisites
+
+- Java Development Kit (JDK) installed
+- Git installed
+
 
 ## Getting Started
 
+
 1. **Clone the repository**:
    ```
-   git clone <repository-url>
+   git clone https://github.com/wikotleon/java-game.git
    ```
 
 2. **Navigate to the project directory**:
@@ -26,22 +31,30 @@ This project is a simple text-based game where players can choose characters wit
    cd java-game
    ```
 
-3. **Build the project**:
+3. **Compile the java files**:
    ```
-   mvn clean install
+   javac -d bin src/com/game/*.java src/com/game/enums/*.java src/com/game/challenges/*.java
    ```
 
 4. **Run the game**:
    ```
-   mvn exec:java -Dexec.mainClass="com.game.Main"
+   java -cp bin com.game.Main
    ```
 
-## How to Play
+## Usage
 
-- Players will be prompted to select their characters.
-- The game will randomly select three challenges for each round.
-- The winner of each challenge is determined based on the character's attributes.
-- The player with the most wins at the end of the rounds is declared the overall winner.
+1. **When you run the game, you will se a menu with the following options**:
+```
+Menu:
+1. Set team name
+2. Add new character
+3. Remove a character
+4. Remove all characters
+5. Show all characters
+6. Start game rounds
+7. Exit
+```
+2. **Enter the number corresponding to the action you want to perform and follow the prompts.**
 
 ## Contributing
 
