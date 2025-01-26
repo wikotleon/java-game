@@ -1,4 +1,5 @@
 #Ignore compiled Java class files
 *.class
 
-
+#Ignore vscode settings
+.vscode
